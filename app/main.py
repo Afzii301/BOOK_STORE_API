@@ -1,36 +1,25 @@
-import os
-import sys
-from fastapi import FastAPI, Depends
-from sqlalchemy.orm import Session
-
-# folder structure ye btata ha k main folder ke andar app folder hai jisme database.py file hai 
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if ROOT_DIR not in sys.path:
-    sys.path.append(ROOT_DIR)
-
+from fastapi import FastAPI
+from app.routers import auth
 from app.database import SessionLocal, Base, engine
 from models import User, Book, Purchase, Review
 from schemas import UserCreate, BookCreate, PurchaseCreate, ReviewCreate
 from dotenv import load_dotenv
+import os
 
-load_dotenv(os.path.join(ROOT_DIR, ".env"))
+load_dotenv(".env")
 
-app = FastAPI(
-    title="Book API",
-    description="A simple API for managing books and users",
-)
+app = FastAPI(title="Book API")
 
 Base.metadata.create_all(bind=engine)
-# Dependency
+
 def get_db():
     db = SessionLocal()
     try:
-        yield db 
+        yield db
     finally:
         db.close()
-        
-        
-        
-        
-        
-        
+
+app.include_router(auth.router,prefix="/auth")
+
+
+
