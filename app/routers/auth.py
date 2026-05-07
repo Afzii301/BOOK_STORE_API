@@ -3,8 +3,8 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from models.user import User, Role
-from schemas.user import UserCreate
-from core.security import hash_password
+from schemas.user import UserCreate, UserLogin
+from core.security import create_access_token, hash_password, verify_password
 
 router = APIRouter(
     prefix="/auth",
@@ -16,7 +16,7 @@ from sqlalchemy.exc import IntegrityError
 def register(user: UserCreate, db: Session = Depends(get_db)):
 
     try:
-        # Convert role string to enum
+        
         try:
             role = Role(user.role.lower())
         except ValueError:
@@ -50,3 +50,36 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
                 "message": "Username or email already exists"
             }
         )
+#   login endpoint
+@router.post("/login")
+def login(user: UserLogin, db: Session = Depends(get_db)):
+    db_user = db.query(User).filter(
+        User.username == user.username
+    ).first()
+
+    if not db_user:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "error_code": "BOOKSTORE_USER_NOT_FOUND",
+                "message": "User not found"
+            }
+        )
+    if not verify_password(user.password, db_user.password_hash):
+        raise HTTPException(
+            status_code=401,
+            detail={
+                "error_code": "BOOKSTORE_INVALID_CREDENTIALS",
+                "message": "Wrong password"
+            }
+        )
+
+    # token creat
+    token = create_access_token({
+        "user_id": db_user.id,
+        "role": db_user.role.value
+    })
+    return {
+        "access_token": token,
+        "token_type": "bearer"
+    }

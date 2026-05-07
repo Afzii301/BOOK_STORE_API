@@ -7,6 +7,10 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str
     role: Literal["customer", "author"]
+
+class UserLogin(BaseModel):
+    username: str
+    password: str
     
 class UserResponse(BaseModel):
     id: int
