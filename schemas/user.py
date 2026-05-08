@@ -16,7 +16,9 @@ class UserResponse(BaseModel):
     id: int
     username: str
     email: EmailStr
-    role:Literal["customer", "author"]
-    
-    class Config:
-        from_attributes = True
+    role: Literal["customer", "author"]
+
+    model_config = {
+        "from_attributes": True,
+        "populate_by_name": True,
+    }
