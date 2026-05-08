@@ -10,7 +10,5 @@ class PurchaseResponse(BaseModel):
     book_id: int
     purchase_date: str
 
-    model_config = {
-        "from_attributes": True,
-        "populate_by_name": True,
-    }
+    class Config:
+        from_attributes = True
