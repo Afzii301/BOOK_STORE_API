@@ -4,12 +4,16 @@ class BookCreate(BaseModel):
     title: str
     author: str
     price: float
+    description: str | None = None
 
 class BookResponse(BaseModel):
     id: int
     title: str
     author: str
     price: float
+    description: str | None = None
 
-    class Config:
-        from_attributes = True
+    model_config = {
+        "from_attributes": True,
+        "populate_by_name": True,
+    }
