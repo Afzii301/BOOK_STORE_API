@@ -1,13 +1,18 @@
-from pydantic import BaseModel
+from pydantic import BaseModel,EmailStr
 from typing import Literal
+
+
 class UserCreate(BaseModel):
-    name: str
-    email: str
+    username: str
+    email: EmailStr
     password: str
+    role: Literal["customer", "author"]
+    
 class UserResponse(BaseModel):
     id: int
-    name: str
-    email: str
+    username: str
+    email: EmailStr
     role:Literal["customer", "author"]
+    
     class Config:
         from_attributes = True

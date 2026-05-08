@@ -1,18 +1,35 @@
-from sqlalchemy import Column, Integer, String
-from app.database import Base
 import enum
+from sqlalchemy import Column, Integer, String, Enum
+from app.database import Base
 
-class role(str, enum.Enum):
-    admin = "author"
-    user = "customer"
 
+class Role(str, enum.Enum):
+    author = "ADMIN"
+    customer = "CUSTOMER"
+
+    @classmethod
+    def _missing_(cls, value):
+        if isinstance(value, str):
+            lower = value.lower()
+            for member in cls:
+                if member.name == lower or member.value.lower() == lower:
+                    return member
+        return super()._missing_(value)
 
 
 class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False)
-    email = Column(String(100),unique=True, nullable=False)
-    password = Column(String(255), nullable=False)
-    role = Column(String, nullable=False)
+    username = Column(String(100), nullable=False)
+    email = Column(String(100), nullable=False)
+    password_hash = Column(String(255), nullable=False)
+
+    role = Column(
+        Enum(
+            Role,
+            values_callable=lambda enum_cls: [member.value for member in enum_cls],
+            name="role",
+        ),
+        nullable=False,
+    )
