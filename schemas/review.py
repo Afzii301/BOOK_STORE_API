@@ -13,7 +13,5 @@ class ReviewResponse(BaseModel):
     rating: float
     comment: str | None = None
 
-    model_config = {
-        "from_attributes": True,
-        "populate_by_name": True,
-    }
+    class Config:
+        from_attributes = True
