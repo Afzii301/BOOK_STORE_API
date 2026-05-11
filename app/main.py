@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.routers import auth, book
+from app.routers import auth, book, purchase, review
 from app.database import SessionLocal, Base, engine
 from models import User, Book, Purchase, Review
 from schemas import UserCreate, BookCreate, PurchaseCreate, ReviewCreate
@@ -30,6 +30,8 @@ def get_db():
 
 app.include_router(auth.router,prefix="")
 app.include_router(book.router,prefix="")
+app.include_router(purchase.router,prefix="")
+app.include_router(review.router,prefix="")
 
 
 

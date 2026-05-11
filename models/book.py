@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import relationship
 from app.database import Base
 
 class Book(Base):
@@ -9,3 +10,5 @@ class Book(Base):
     author = Column(String, nullable=False)
     price = Column(Integer, nullable=False)
     description = Column(String, nullable=True)
+
+    purchases = relationship("Purchase", back_populates="book")

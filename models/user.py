@@ -1,5 +1,6 @@
 import enum
 from sqlalchemy import Column, Integer, String, Enum
+from sqlalchemy.orm import relationship
 from app.database import Base
 
 
@@ -33,3 +34,5 @@ class User(Base):
         ),
         nullable=False,
     )
+
+    purchases = relationship("Purchase", back_populates="customer")
