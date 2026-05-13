@@ -8,7 +8,6 @@ from app.database import get_db
 from models.user import User
 import os
 from dotenv import load_dotenv
-
 # -------------------------
 # LOAD ENV CONFIG
 # -------------------------
@@ -23,10 +22,7 @@ pwd_context = CryptContext(
     deprecated="auto",
     bcrypt__max_rounds=12
 )
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
-
-# -------------------------
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 def _normalize_password(password) -> bytes:
     """Convert to bytes and truncate to 72 characters."""

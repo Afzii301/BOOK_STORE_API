@@ -36,3 +36,4 @@ class User(Base):
     )
 
     purchases = relationship("Purchase", back_populates="customer")
+    reviews = relationship("Review", back_populates="customer")

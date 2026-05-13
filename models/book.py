@@ -12,3 +12,4 @@ class Book(Base):
     description = Column(String, nullable=True)
 
     purchases = relationship("Purchase", back_populates="book")
+    reviews = relationship("Review", back_populates="book")

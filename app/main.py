@@ -20,6 +20,12 @@ if inspector.has_table("books"):
         with engine.begin() as conn:
             conn.execute(text("ALTER TABLE books ADD COLUMN description VARCHAR"))
 
+if inspector.has_table("reviews"):
+    columns = [col["name"] for col in inspector.get_columns("reviews")]
+    if "user_id" in columns and "customer_id" not in columns:
+        with engine.begin() as conn:
+            conn.execute(text("ALTER TABLE reviews RENAME COLUMN user_id TO customer_id"))
+
 
 def get_db():
     db = SessionLocal()

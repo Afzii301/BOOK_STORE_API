@@ -6,10 +6,10 @@ class Review(Base):
     __tablename__ = "reviews"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    customer_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     book_id = Column(Integer, ForeignKey("books.id"), nullable=False)
     rating = Column(Float, nullable=False)
     comment = Column(String, nullable=True)
 
-    user = relationship("User")
-    book = relationship("Book")
+    customer = relationship("User", back_populates="reviews")
+    book = relationship("Book", back_populates="reviews")
