@@ -9,9 +9,9 @@ class BookCreate(BaseModel):
 class BookResponse(BaseModel):
     id: int
     title: str
-    author: str
     price: float
     description: str | None = None
+    author_id:int
 
     model_config = {
         "from_attributes": True,

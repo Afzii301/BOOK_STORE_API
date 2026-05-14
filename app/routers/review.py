@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app.database import SessionLocal
+from app.database import get_db
 from models.review import Review as ReviewModel
 from models.user import User as UserModel
 from models.book import Book as BookModel
@@ -12,14 +12,6 @@ router = APIRouter(
     prefix="/reviews",
     tags=["reviews"]
 )
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
 @router.post("/{book_id}", response_model=ReviewResponse)
 def create_review(book_id: int, review: ReviewCreate, db: Session = Depends(get_db), current_user: UserModel = Depends(get_current_user)):
     if current_user.role.value != "customer":
@@ -47,9 +39,12 @@ def create_review(book_id: int, review: ReviewCreate, db: Session = Depends(get_
             "message": "You must purchase the book before reviewing it"
         })
 
-    # Validate rating
+    # Validate rating is between 1 and 5
     if not (1 <= review.rating <= 5):
-        raise HTTPException(status_code=400, detail="Rating must be between 1 and 5")
+        raise HTTPException(status_code=400, detail={
+            "error_code": "BOOKSTORE_INVALID_RATING",
+            "message": "Rating must be between 1 and 5"
+        })
 
     # Check if already reviewed
     existing_review = db.query(ReviewModel).filter(
@@ -57,7 +52,10 @@ def create_review(book_id: int, review: ReviewCreate, db: Session = Depends(get_
         ReviewModel.book_id == book_id
     ).first()
     if existing_review:
-        raise HTTPException(status_code=400, detail="You have already reviewed this book")
+        raise HTTPException(status_code=400, detail={
+            "error_code": "BOOKSTORE_REVIEW_EXISTS",
+            "message": "You have already reviewed this book"
+        })
 
     db_review = ReviewModel(
         customer_id=current_user.id,

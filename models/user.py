@@ -5,8 +5,8 @@ from app.database import Base
 
 
 class Role(str, enum.Enum):
-    author = "ADMIN"
-    customer = "CUSTOMER"
+    author = "author"
+    customer = "customer"
 
     @classmethod
     def _missing_(cls, value):
@@ -35,4 +35,5 @@ class User(Base):
         nullable=False,
     )
 
-    purchases = relationship("Purchase", back_populates="customer")
+    purchases = relationship("Purchase", back_populates="customer", foreign_keys="Purchase.customer_id")
+    reviews = relationship("Review", back_populates="customer")
