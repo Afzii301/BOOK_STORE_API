@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel
 
 class PurchaseCreate(BaseModel):
@@ -7,8 +9,10 @@ class PurchaseCreate(BaseModel):
 class PurchaseResponse(BaseModel):
     id: int
     user_id: int
+    customer_id: int
     book_id: int
-    purchase_date: str
+    price_paid: float
+    purchased_at: datetime  
 
     model_config = {
         "from_attributes": True,

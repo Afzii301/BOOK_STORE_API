@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 from app.database import Base
 
@@ -7,9 +7,12 @@ class Book(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, nullable=False)
-    author = Column(String, nullable=False)
     price = Column(Integer, nullable=False)
     description = Column(String, nullable=True)
+    cover_url    = Column(String, nullable=True)
+    author_id = Column(Integer,ForeignKey("users.id"), nullable=False)
 
     purchases = relationship("Purchase", back_populates="book")
     reviews = relationship("Review", back_populates="book")
+
+
