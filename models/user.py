@@ -36,4 +36,4 @@ class User(Base):
     )
 
     purchases = relationship("Purchase", back_populates="customer", foreign_keys="Purchase.customer_id")
-    reviews = relationship("Review", back_populates="customer")
+    reviews = relationship("Review", back_populates="customer",foreign_keys="Review.customer_id")
