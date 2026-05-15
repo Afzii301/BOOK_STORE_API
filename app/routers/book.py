@@ -8,7 +8,9 @@ from sqlalchemy.orm import Session
 from core.security import get_current_user
 from models.book import Book as BookModel
 from models.user import Role
+from schemas import book
 from schemas.book import BookCreate, BookResponse
+from models.purchase import Purchase as PurchaseModel
 router = APIRouter(
     prefix="/books",
     tags=["books"]
@@ -98,9 +100,17 @@ def delete_book(book_id: int, db: Session = Depends(get_db), current_user = Depe
     book = db.query(BookModel).filter(BookModel.id == book_id).first()
     if not book:
         raise HTTPException(status_code=404, detail="Book not found")
-    if current_user.role != Role.author:
-            raise HTTPException(status_code=403, detail="Sirf Authors hi books Delete kr  sakta hain.")
-
-    db.delete(book)
-    db.commit()
-    return {"message": "Book deleted successfully"}
+    if current_user.role != Role.author or book.author_id != current_user.id:
+            raise HTTPException(status_code=403, detail="Sirf Authors hi apni books Delete kr  sakta hain.")
+    try:
+        db.query(PurchaseModel).filter(PurchaseModel.book_id == book_id).delete()
+        
+        # 4. Ab book delete karein
+        db.delete(book)
+        db.commit()
+        
+        return {"message": f"Book ID {book_id} aur uski purchase history delete ho gayi hai."}
+        
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Delete fail ho gaya: {str(e)}")

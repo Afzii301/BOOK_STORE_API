@@ -1,73 +1,57 @@
-from datetime import datetime, timezone
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from typing import List
+
 from app.database import get_db
-from models.book import Book as BookModel
-from models.purchase import Purchase as PurchaseModel
-from models.user import User as UserModel
-from schemas.purchase import PurchaseCreate, PurchaseResponse
 from core.security import get_current_user
-from sqlalchemy.exc import IntegrityError
+from models.purchase import Purchase as PurchaseModel
+from models.book import Book as BookModel
+from models.user import User as UserModel, Role
+from schemas.purchase import PurchaseResponse
+
 router = APIRouter(prefix="/purchases", tags=["purchases"])
 
-@router.post("/")
-def create_purchase(purchase_in: PurchaseCreate, db: Session = Depends(get_db), current_user: UserModel = Depends(get_current_user)):
-    # Pehle check karein ke kya user waqayi exist karta hai
-    user = db.query(UserModel).filter(UserModel.id == current_user.id).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="Aapka user account delete ho chuka hai ya maujood nahi hai.")
-
-    try:
-        new_purchase = PurchaseModel(
-            user_id=current_user.id,
-            customer_id=current_user.id,
-            book_id=purchase_in.book_id,
-            price_paid=1000, # ya book.price
-            purchased_at=datetime.now(timezone.utc)
-        )
-        db.add(new_purchase)
-        db.commit()
-        return new_purchase
-    except IntegrityError:
-        db.rollback()
-        raise HTTPException(status_code=400, detail="Database error: User ID ya Book ID valid nahi hai.")
-    
-    
-@router.post("/{book_id}", response_model=PurchaseResponse)
-def buy_book(
-    book_id: int,
-    db: Session = Depends(get_db),
+# --- GET: Purchase History (Customer Only) ---
+@router.get("/history", response_model=list[PurchaseResponse])
+def get_history(
+    db: Session = Depends(get_db), 
     current_user: UserModel = Depends(get_current_user)
 ):
-    if current_user.role.value != "customer":
-        raise HTTPException(
-            status_code=403,
-            detail={
-                "error_code": "BOOKSTORE_ROLE_FORBIDDEN",
-                "message": "Only customers can buy books"
-            }
-        )
+    if current_user.role != Role.customer:
+        raise HTTPException(status_code=403, detail="Sirf customers history dekh saktay hain.")
 
+    history = db.query(PurchaseModel).filter(PurchaseModel.user_id == current_user.id).all()
+    return history
+
+# --- POST: Buy a Book ---
+@router.post("/{book_id}", response_model=PurchaseResponse)
+def buy_book(
+    book_id: int, 
+    db: Session = Depends(get_db), 
+    current_user: UserModel = Depends(get_current_user)
+):
+    # 1. Role Check
+    if current_user.role != Role.customer:
+        raise HTTPException(status_code=403, detail="Sirf customers hi khareed saktay hain.")
+
+    # 2. Book Check
     book = db.query(BookModel).filter(BookModel.id == book_id).first()
     if not book:
-        raise HTTPException(
-            status_code=404,
-            detail={
-                "error_code": "BOOKSTORE_BOOK_NOT_FOUND",
-                "message": "Book not found"
-            }
-        )
+        raise HTTPException(status_code=404, detail="Book nahi mili.")
 
-    # Constraint C: snapshot the current price at purchase time
-    purchase = PurchaseModel(
+    # 3. Create Purchase
+    new_purchase = PurchaseModel(
         user_id=current_user.id,
         customer_id=current_user.id,
         book_id=book.id,
-        price_paid=book.price,
-        purchased_at=datetime.now(timezone.utc)
+        price_paid=book.price  # Snapshot price
     )
-    db.add(purchase)
-    db.commit()
-    db.refresh(purchase)
 
-    return purchase
+    try:
+        db.add(new_purchase)
+        db.commit()
+        db.refresh(new_purchase)
+        return new_purchase
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Purchase fail: {str(e)}")

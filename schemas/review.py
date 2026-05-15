@@ -1,17 +1,17 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from datetime import datetime
 
 class ReviewCreate(BaseModel):
-    rating: float
-    comment: str | None = None
+    rating: int = Field(..., ge=1, le=5) # Sirf 1 se 5 tak rating
+    comment: str
 
 class ReviewResponse(BaseModel):
     id: int
-    customer_id: int
+    user_id: int
     book_id: int
-    rating: float
-    comment: str | None = None
+    rating: int
+    comment: str
+    created_at: datetime
 
-    model_config = {
-        "from_attributes": True,
-        "populate_by_name": True,
-    }
+    class Config:
+        from_attributes = True
