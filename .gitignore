@@ -8,3 +8,5 @@ env.example/
 .gitignore
 static\covers/
 static\thumbnails/
+alembic.ini
+migrations/
