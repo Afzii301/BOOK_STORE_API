@@ -1,6 +1,15 @@
 from datetime import datetime
 
 from pydantic import BaseModel
+class bookDetailsInpurchase(BaseModel):
+    id: int
+    title: str
+    price: float
+    cover_url: str|None
+    
+    model_config = {
+        "from_attributes": True,
+    }
 
 class PurchaseCreate(BaseModel):
     user_id: int

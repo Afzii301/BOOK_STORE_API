@@ -53,11 +53,12 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
 #   login endpoint
 @router.post("/login")
 def login(
-    form_data: OAuth2PasswordRequestForm = Depends(),
+    username: str,
+    password: str,
     db: Session = Depends(get_db)
 ):
     db_user = db.query(User).filter(
-        User.username == form_data.username
+        User.username == username
     ).first()
 
     if not db_user:
@@ -70,7 +71,7 @@ def login(
         )
 
     if not verify_password(
-        form_data.password,
+        password,
         db_user.password_hash
     ):
         raise HTTPException(
