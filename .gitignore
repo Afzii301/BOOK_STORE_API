@@ -10,3 +10,4 @@ static\covers/
 static\thumbnails/
 alembic.ini
 migrations/
+ launch.json
